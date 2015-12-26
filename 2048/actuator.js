@@ -81,8 +81,8 @@ function actuator() {
 
 		/*
 		 * Expected Logic: 
-		 * This should move all slots with an empty slot above it first. Once those are moved, it will move any that can be merged. Once a slot has been merged with, it cannot be merged again,
-		 * this turn. This should iterate through each column, starting from 0x0 to 0xNc, all the way to NrxNc. If there is a move that happens at any point, it will perform the move,
+		 * This should move all slots with an empty slot below it first. Once those are moved, it will move any that can be merged. Once a slot has been merged with, it cannot be merged again,
+		 * this turn. This should iterate through each column, starting from Nrx0 to NrxNc, all the way to 0xNc. If there is a move that happens at any point, it will perform the move,
 		 * and at the end of that iteration will begin at the beginning again, until there are no moves that can be made in that direction.
 		 */
 		do{
@@ -145,25 +145,25 @@ function actuator() {
 
 			madeMove = false;
 
-			for( var column = 0; column < board.columns; column++ ){
+			for( var row = 0; row < board.rows; row++ ){
 
-				/* We're looking at each row first
-				 * Logically, we know the top row can't move
+				/* We're looking at each column first
+				 * Logically, we know the leftmost column can't move
 				 * so skip it.
 				 */
-				for( var row = 1; row < board.rows; row++ ){
+				for( var column = 1; column < board.columns; column++ ){
 
-					if( board.board[ row - 1 ][ column ] == 0 ){
+					if( board.board[ row ][ column - 1 ] == 0 ){
 						// The slot above is empty, so move into it.
-						self.setValue( board, row - 1, column, row, column );
+						self.setValue( board, row, column - 1, row, column );
 						madeMove = true;
 						continue;
 					}
 
-					if( board.board[ row - 1 ][ column ] == board.board[ row ][ column ] && mergedIndexes.indexOf( ( row -1 ) + "x" + column ) < 0 ){
+					if( board.board[ row ][ column - 1 ] == board.board[ row ][ column ] && mergedIndexes.indexOf( row + "x" + ( column - 1 ) ) < 0 ){
 						// The values for the rows are the same, so combine them.
-						self.setValue( board, row - 1, column, row, column, true );
-						mergedIndexes.push( ( row - 1 ) + "x" + column );
+						self.setValue( board, row, column - 1, row, column, true );
+						mergedIndexes.push( row + "x" + ( column - 1 ) );
 						madeMove = true;
 						continue;
 					}
@@ -188,33 +188,38 @@ function actuator() {
 
 		/*
 		 * Expected Logic: 
-		 * This should move all slots with an empty slot above it first. Once those are moved, it will move any that can be merged. Once a slot has been merged with, it cannot be merged again,
-		 * this turn. This should iterate through each column, starting from 0x0 to 0xNc, all the way to NrxNc. If there is a move that happens at any point, it will perform the move,
+		 * This should move all slots with an empty slot below it first. Once those are moved, it will move any that can be merged. Once a slot has been merged with, it cannot be merged again,
+		 * this turn. This should iterate through each column, starting from Nrx0 to NrxNc, all the way to 0xNc. If there is a move that happens at any point, it will perform the move,
 		 * and at the end of that iteration will begin at the beginning again, until there are no moves that can be made in that direction.
 		 */
 		do{
 
 			madeMove = false;
 
-			for( var column = 0; column < board.columns; column++ ){
+			for( var row = 0; row < board.rows; row++ ){
 
-				/* We're looking at each row first
-				 * Logically, we know the top row can't move
+				/* We're looking at each column first
+				 * Logically, we know the rightmost column can't move
 				 * so skip it.
 				 */
-				for( var row = 1; row < board.rows; row++ ){
+				for( var column = board.columns - 1; column > 0; column-- ){
 
-					if( board.board[ row - 1 ][ column ] == 0 ){
-						// The slot above is empty, so move into it.
-						self.setValue( board, row - 1, column, row, column );
+					/*
+					 * NOTE: CONFUSION ALERT!
+					 * Because the board is zero indexed, what we're using here as "column" is actually "column + 1" which is referencing
+					 * the row that is directly below the row that we are currently on.
+					 */
+					if( board.board[ row ][ column ] == 0 ){
+						// The slot below is empty, so move into it.
+						self.setValue( board, row, column, row, column - 1 );
 						madeMove = true;
 						continue;
 					}
 
-					if( board.board[ row - 1 ][ column ] == board.board[ row ][ column ] && mergedIndexes.indexOf( ( row -1 ) + "x" + column ) < 0 ){
-						// The values for the rows are the same, so combine them.
-						self.setValue( board, row - 1, column, row, column, true );
-						mergedIndexes.push( ( row - 1 ) + "x" + column );
+					if( board.board[ row ][ column ] == board.board[ row ][ column - 1 ] && mergedIndexes.indexOf( row + "x" + column ) < 0 ){
+						// The values for the columns are the same, so combine them.
+						self.setValue( board, row, column, row, column - 1, true );
+						mergedIndexes.push( row + "x" + column );
 						madeMove = true;
 						continue;
 					}
